@@ -2,7 +2,8 @@
   "name": "Mastery-Server",
   "description": "An HTML5 platform game where you take on the role as a wizard fighting the undead.",
   "dependencies": {
-    "promise": "^6.0.1"
+    "promise": "^6.0.1",
+    "socket.io": "^1.2.1"
   },
   "devDependencies": {
     "uglify-js": ">= 2.4.0 < 3.0.0",
@@ -14,4 +15,3 @@
   },
   "main": "lib/main.js"
 }
-
