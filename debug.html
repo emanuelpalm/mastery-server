@@ -1,0 +1,54 @@
+<html>
+    <head>
+        <title>Socket.IO</title>
+        <script>
+            function main(out) {
+                var socket = io("http://localhost:8082");
+                socket.on("connect", function () {
+                    console.log(socket);
+                    socket.emit("identification", { id: 1234, avatarUrl: "localhost/avatar.png" });
+
+                    socket.on("message", function (message) {
+                        out("Message: " + JSON.stringify(message));
+                    });
+                    
+                    socket.on("state", function (state) {
+                        out("State: " + state);
+                    });
+                    
+                    socket.on("party", function (party) {
+                        out(JSON.stringify(party));
+                    });
+                    
+                    socket.on("disconnect", function () {
+                        out("Disconnected.");
+                    });
+
+                    document.getElementById("submit").addEventListener("click", function () {
+                        var $input = document.getElementById("input");
+                        socket.send($input.value);
+                        $input.value = "";
+                    });
+                    
+                    document.getElementById("disconnect").addEventListener("click", function () {
+                        socket.disconnect();
+                    });
+                });
+            }
+            window.addEventListener("load", function () {
+                var $output = document.getElementById("output");
+                main(function (text) {
+                    $output.innerHTML += text + "\n";
+                    console.log(text);
+                });
+            });
+        </script>
+        <script src="https://cdn.socket.io/socket.io-1.2.1.js"></script>
+    </head>
+    <body>
+        <input type="text" id="input" />
+        <button id="submit">Send</button>
+        <button id="disconnect">Disconnect</button>
+        <pre id="output"></pre>
+    </body>
+</html>
