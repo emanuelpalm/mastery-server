@@ -1,7 +1,14 @@
+# Build base path.
+PATH_BASE    = build/
+
 # Code optimization.
 MINIFIER     = ./$(NODE_MODULES)/.bin/uglifyjs
-MINIFIED     = $(MINI_PATH)main.js
-MINI_PATH    = $(PATH_BASE)lib/
+MINIFIER_IN  = $(shell find lib/ -type f -iname '*.js*')
+MINIFIER_OUT = $(MINIFIER_IN:%=$(PATH_BASE)%)
+
+# NPM package.
+NPMPKG_IN    = package.json
+NPMPKG_OUT   = $(PATH_BASE)package.json
 
 # GNU tools.
 RM           = rm -f
@@ -17,7 +24,6 @@ NODE_MODULES = node_modules
 PATH_RELEASE = build/release/
 SOURCE_FILES = $(shell find lib/ -type f -iname '*.js*')
 SOURCE_MAIN  = lib/main.js
-NPM_PACKAGE  = package.json
 
 ifeq (,$(shell which $(NPM)))
 $(error Cannot find "npm" in PATH. Please install node.js and try again)
@@ -42,18 +48,13 @@ help:
 
 # Automatic commands. Don't use these directly.
 
-auto-release: $(MINIFIED) $(PATH_BASE)$(NPM_PACKAGE)
+auto-release: $(NPMPKG_OUT) $(MINIFIER_OUT)
+	cd $(PATH_BASE) && $(NPM) install --production
 
 auto-clean:
 	$(foreach FILE,$(wildcard $(GARBAGE)),$(RM) $(FILE)$(\n))
 
-$(PATH_BASE):
-	@$(MKDIR) $@
-
-$(MINI_PATH): $(PATH_BASE)
-	@$(MKDIR) $@
-
-$(PATH_BASE)$(NPM_PACKAGE): $(NPM_PACKAGE)
+$(NPMPKG_OUT): $(NPMPKG_IN)
 	$(CP) $< $@
 
 $(NODE_MODULES):
@@ -61,10 +62,11 @@ $(NODE_MODULES):
 
 $(MINIFIER): $(NODE_MODULES)
 
-$(MINIFIED): $(SOURCE_FILES) $(MINIFIER) $(MINI_PATH)
-	$(MINIFIER) $(SOURCE_FILES) --mangle --compress "warnings=false" -o $@
+$(PATH_BASE)%.js: %.js $(MINIFIER)
+	$(MKDIR) $(dir $@)
+	$(MINIFIER) $< --compress "warnings=false" -o $@
 
-.PHONY: auto-clean release clean version test run
+.PHONY: $(NPMPKG_OUT) auto-clean release clean version test run
 
 define \n
 
